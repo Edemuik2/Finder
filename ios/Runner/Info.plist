@@ -45,20 +45,27 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<!-- Добавьте эти строки в ваш Info.plist перед закрывающим </dict> -->
+	<!-- Удалите старые ключи NSBluetoothAlwaysUsageDescription и NSBluetoothPeripheralUsageDescription -->
+<!-- Добавьте эти новые ключи для iOS 13+ -->
 
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Это приложение использует Bluetooth для поиска и определения расстояния до ваших устройств</string>
+    <string>Это приложение использует Bluetooth для поиска ваших устройств поблизости</string>
 
     <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>Это приложение использует Bluetooth для поиска и определения расстояния до ваших устройств</string>
-
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Местоположение необходимо для сканирования Bluetooth устройств</string>
+    <string>Это приложение использует Bluetooth для поиска ваших устройств поблизости</string>
 
     <key>UIBackgroundModes</key>
     <array>
     <string>bluetooth-central</string>
     </array>
+
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Для сканирования Bluetooth устройств iOS требует разрешение на местоположение</string>
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Для сканирования Bluetooth устройств iOS требует разрешение на местоположение</string>
+
+    <key>UIRequiresPersistentWiFi</key>
+    <false/>
 </dict>
 </plist>

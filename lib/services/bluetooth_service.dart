@@ -33,36 +33,51 @@ class BluetoothService extends ChangeNotifier {
   }
 
   Future<bool> requestPermissions() async {
-    if (await Permission.bluetoothScan.isDenied) {
-      await Permission.bluetoothScan.request();
+    try {
+      // Запрашиваем Bluetooth разрешения
+      if (await Permission.bluetoothScan.isDenied) {
+        final result = await Permission.bluetoothScan.request();
+        debugPrint('Bluetooth Scan permission: $result');
+      }
+
+      if (await Permission.bluetoothConnect.isDenied) {
+        final result = await Permission.bluetoothConnect.request();
+        debugPrint('Bluetooth Connect permission: $result');
+      }
+
+      // Запрашиваем местоположение (требуется для Bluetooth на iOS)
+      if (await Permission.locationWhenInUse.isDenied) {
+        final result = await Permission.locationWhenInUse.request();
+        debugPrint('Location permission: $result');
+      }
+
+      final bluetoothScan = await Permission.bluetoothScan.isGranted;
+      final bluetoothConnect = await Permission.bluetoothConnect.isGranted;
+      final location = await Permission.locationWhenInUse.isGranted;
+
+      debugPrint(
+          'Permissions - Scan: $bluetoothScan, Connect: $bluetoothConnect, Location: $location');
+
+      return bluetoothScan && bluetoothConnect && location;
+    } catch (e) {
+      debugPrint('Error requesting permissions: $e');
+      return false;
     }
-
-    if (await Permission.bluetoothConnect.isDenied) {
-      await Permission.bluetoothConnect.request();
-    }
-
-    if (await Permission.location.isDenied) {
-      await Permission.location.request();
-    }
-
-    final bluetoothScan = await Permission.bluetoothScan.isGranted;
-    final bluetoothConnect = await Permission.bluetoothConnect.isGranted;
-    final location = await Permission.location.isGranted;
-
-    return bluetoothScan && bluetoothConnect && location;
   }
 
   Future<void> startScanning() async {
     if (_isScanning) return;
 
+    debugPrint('Starting Bluetooth scan...');
+
     final hasPermissions = await requestPermissions();
     if (!hasPermissions) {
-      debugPrint('Permissions not granted');
+      debugPrint('ERROR: Permissions not granted');
       return;
     }
 
     if (!_isBluetoothOn) {
-      debugPrint('Bluetooth is off');
+      debugPrint('ERROR: Bluetooth is off');
       return;
     }
 
@@ -71,17 +86,26 @@ class BluetoothService extends ChangeNotifier {
     notifyListeners();
 
     try {
+      debugPrint('Calling FlutterBluePlus.startScan()...');
+
       await FlutterBluePlus.startScan(
-        timeout: const Duration(seconds: 4),
-        androidUsesFineLocation: true,
+        timeout: const Duration(seconds: 15),
+        androidUsesFineLocation: false,
       );
 
+      debugPrint('Scan started successfully');
+
       _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
+        debugPrint('Scan results: ${results.length} devices found');
+
         for (ScanResult result in results) {
           final device = result.device;
           final name = result.advertisementData.advName.isNotEmpty
               ? result.advertisementData.advName
               : device.platformName;
+
+          debugPrint(
+              'Found device: $name (${device.remoteId}) RSSI: ${result.rssi}');
 
           if (name.isEmpty) continue;
 
@@ -103,10 +127,11 @@ class BluetoothService extends ChangeNotifier {
         notifyListeners();
       });
 
-      await Future.delayed(const Duration(seconds: 4));
+      // Ждем завершения сканирования
+      await Future.delayed(const Duration(seconds: 15));
       await stopScanning();
     } catch (e) {
-      debugPrint('Error scanning: $e');
+      debugPrint('ERROR scanning: $e');
       _isScanning = false;
       notifyListeners();
     }

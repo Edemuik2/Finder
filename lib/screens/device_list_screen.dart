@@ -35,8 +35,15 @@ class _DeviceListScreenState extends State<DeviceListScreen>
   }
 
   Future<void> _startScanning() async {
+    debugPrint('DeviceListScreen: Starting scan...');
     final service = context.read<BluetoothService>();
+
+    debugPrint('Bluetooth is on: ${service.isBluetoothOn}');
+    debugPrint('Is scanning: ${service.isScanning}');
+
     await service.startScanning();
+
+    debugPrint('After scan - devices found: ${service.devices.length}');
   }
 
   @override
@@ -114,10 +121,8 @@ class _DeviceListScreenState extends State<DeviceListScreen>
                   const Spacer(),
                   if (!service.isScanning)
                     IconButton(
-                      icon: const Icon(
-                        Icons.refresh_rounded,
-                        color: Colors.blue,
-                      ),
+                      icon:
+                          const Icon(Icons.refresh_rounded, color: Colors.blue),
                       onPressed: _startScanning,
                     ),
                 ],
@@ -148,7 +153,10 @@ class _DeviceListScreenState extends State<DeviceListScreen>
       builder: (context, value, child) {
         return Transform.translate(
           offset: Offset(0, 20 * (1 - value)),
-          child: Opacity(opacity: value, child: child),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
         );
       },
       child: Container(
@@ -156,7 +164,10 @@ class _DeviceListScreenState extends State<DeviceListScreen>
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
         ),
         child: Material(
           color: Colors.transparent,
@@ -337,7 +348,10 @@ class _DeviceListScreenState extends State<DeviceListScreen>
             ),
             child: const Text(
               'Повторить поиск',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
